@@ -10,12 +10,8 @@ class Location(Location_base, table=True):
 class create_location(Location_base):
     pass
 class update_location(SQLModel):
-    id : int 
     name : str 
     location : str
-
-class get_location(Location_base):
-    id:int
 
 
 def create_db_and_tables():

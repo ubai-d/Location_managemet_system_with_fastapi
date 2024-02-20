@@ -1,0 +1,11 @@
+httpcore
+fastapi
+psycopg2
+pydantic
+uvicorn
+typing
+SQLAlchemy
+sqlmodel
+python-dotenv
+pytest
+pydantic_core
