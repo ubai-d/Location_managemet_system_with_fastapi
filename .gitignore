@@ -1,5 +1,5 @@
 # .gitignore
-.env
+.env.local
 
 # .gitignore
-**/.env
+**/.env.local
