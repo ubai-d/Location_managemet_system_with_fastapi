@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, status
 from sqlmodel import Session, select
-from models.location_model import Location, update_location ,create_db_and_tables
+from models.location_model import create_location, Location , get_location, update_location ,create_db_and_tables
 from database.database_model import engine
 
 app = FastAPI(
@@ -29,7 +29,7 @@ def read_all_persons():
         return persons_data
     
 @app.post("/create_person")
-def create_person(person_data: Location):
+def create_person(person_data: create_location):
     """
     create_person function creates a new person record in the database using the provided person_data.
 
@@ -39,11 +39,13 @@ def create_person(person_data: Location):
     Returns:
     - Location: the newly created person record.
     """
+    person = Location.model_validate(person_data)
     with Session(engine) as session:
-        session.add(person_data)
+        session.add(person)
         session.commit()
-        session.refresh(person_data)
-        return person_data
+        session.refresh(person)
+        session.close()
+        return {"message": "Person created successfully", "person_data": person}
     
 @app.get("/get_person{id}")
 def read_person(id: int):
@@ -57,7 +59,7 @@ def read_person(id: int):
     - person_data: the data of the person identified by the provided name
     """
     with Session(engine) as session:
-        person_data = session.exec(select(Location).where(Location.id == id)).first()
+        person_data = session.exec(select(get_location).where(get_location.id == id)).first()
         if not person_data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
         return person_data
@@ -75,6 +77,7 @@ def update_data(id:int , person_data: update_location):
         session.add(person)
         session.commit()
         session.refresh(person)
+        session.close()
         return person
 
 @app.delete("/delete_person{id}")
@@ -89,9 +92,10 @@ def delete_person(id: int):
     - dict, a message indicating the success of the deletion
     """
     with Session(engine) as session:
-        person = session.exec(select(Location).where(Location.id == id)).first()
+        person = session.exec(select(get_location).where(get_location.id == id)).first()
         if not person:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
         session.delete(person)
         session.commit()
+        session.close()
         return {"message": "Person deleted successfully"}
