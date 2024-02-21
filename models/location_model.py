@@ -13,7 +13,6 @@ class update_location(SQLModel):
     name : str 
     location : str
 
-
 def create_db_and_tables():
     """
     Create the database and tables using the SQLModel metadata and engine.

@@ -39,15 +39,14 @@ def create_person(person_data: create_location):
     Returns:
     - Location: the newly created person record.
     """
-    person = create_location.model_validate(person_data)
+    person = Location.model_validate(person_data)
     with Session(engine) as session:
         session.add(person)
         session.commit()
         session.refresh(person)
-        session.close()
         return {"message": "Person created successfully", "person_data": person}
     
-@app.get("/get_person{id}")
+@app.get("/get_person/{id}")
 def read_person(id: int):
     """
     A function that reads person data based on the provided name parameter and returns the person data. 
@@ -60,24 +59,13 @@ def read_person(id: int):
     """
     with Session(engine) as session:
         person_data = session.exec(select(Location).where(Location.id == id)).first()
-        
         if not person_data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
         return person_data
 
 
-@app.put("/update_person{id}")
+@app.put("/update_person/{id}")
 def update_data(id:int , person_data: update_location):
-    """
-    A function to update person data by ID using the provided person_data and return the updated person object.
-    
-    Parameters:
-    - id: int, the ID of the person to be updated
-    - person_data: update_location, the data to update for the person
-    
-    Returns:
-    - The updated person object
-    """
     with Session(engine) as session:
         person = session.get(Location, id)
         if not person:
@@ -88,11 +76,10 @@ def update_data(id:int , person_data: update_location):
         session.add(person)
         session.commit()
         session.refresh(person)
-        session.close()
-        return {"message": "Data updated successfully", "person_data": person}
+        return person
 
-@app.delete("/delete_person{id}")
-def delete_person(id: int):
+@app.delete("/delete_person/{id}")
+def delete_person(id:int):
     """
     Deletes a person with the specified name from the database.
 
@@ -108,5 +95,4 @@ def delete_person(id: int):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
         session.delete(person)
         session.commit()
-        session.close()
         return {"message": "Person deleted successfully"}
