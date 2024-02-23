@@ -7,6 +7,16 @@ app = FastAPI(
     title="FastAPI with Database",
     description="In this Api we use neon database and connect it with fast api",
     version="1.0.0",
+    servers = [
+    {
+      "url": "https://dashing-kit-pet.ngrok-free.app/",
+      "description": "Production Server",
+    },
+    {
+        "url": "http://127.0.0.1:8000",
+        "description": "Local Server",
+    }
+  ],
 )
 
 @app.on_event("startup")
@@ -16,7 +26,7 @@ def on_startup():
     """
     create_db_and_tables()
 
-@app.get("/persons")
+@app.get("/persons/")
 def read_all_persons():
     """
     Retrieves all persons from the database.
@@ -46,8 +56,8 @@ def create_person(person_data: create_location):
         session.refresh(person)
         return {"message": "Person created successfully", "person_data": person}
     
-@app.get("/get_person/{id}")
-def read_person(id: int):
+@app.get("/get_person/{name}")
+def read_person(name: str):
     """
     A function that reads person data based on the provided name parameter and returns the person data. 
 
@@ -58,16 +68,16 @@ def read_person(id: int):
     - person_data: the data of the person identified by the provided name
     """
     with Session(engine) as session:
-        person_data = session.exec(select(Location).where(Location.id == id)).first()
+        person_data = session.exec(select(Location).where(Location.name == name)).first()
         if not person_data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
         return person_data
 
 
-@app.put("/update_person/{id}")
-def update_data(id:int , person_data: update_location):
+@app.put("/update_person/{person_name}")
+def update_data(person_name:str , person_data: update_location):
     with Session(engine) as session:
-        person = session.get(Location, id)
+        person = session.exec(select(Location).where(Location.name == person_name)).first()
         if not person:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
         data = person_data.model_dump(exclude_unset=True)
@@ -78,8 +88,8 @@ def update_data(id:int , person_data: update_location):
         session.refresh(person)
         return person
 
-@app.delete("/delete_person/{id}")
-def delete_person(id:int):
+@app.delete("/delete_person/{name}")
+def delete_person(name:str):
     """
     Deletes a person with the specified name from the database.
 
@@ -90,7 +100,7 @@ def delete_person(id:int):
     - dict, a message indicating the success of the deletion
     """
     with Session(engine) as session:
-        person = session.exec(select(Location).where(Location.id == id)).first()
+        person = session.exec(select(Location).where(Location.name == name)).first()
         if not person:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
         session.delete(person)
